@@ -23,15 +23,24 @@ Se ha capturado una sesión SIP (archivo sip.cap.gz), que se puede abrir con Wir
    
  ** ¿Qué IP tiene la máquina donde se ha efectuado la captura? ¿Se trata de una IP pública o de una IP privada? ¿Por qué lo sabes?
    
-   La captura se ha realizado en la máquina 192.168.1.34. Es una IP privada porque pertenece al la clase C cuyo rango va 192.168.0.0 a 192.168.255.255.
+   La captura se ha realizado en la máquina 192.168.1.34, porque el flujo de paquetes se inicia en ella. Es una IP privada porque pertenece al la clase C 
+   cuyo rango va 192.168.0.0 a 192.168.255.255.
 
 
 3. Antes de analizar las tramas, mira las estadísticas generales que aparecen en el menú de Statistics. En el apartado de jerarquía de protocolos (Protocol Hierarchy) se puede ver el porcentaje del tráfico correspondiente al protocolo TCP y UDP.
 
  ** ¿Cuál de los dos es mayor? ¿Es esto consistente con una aplicación que transmite en tiempo real?
+   
+   En el apartado Protocol Hierarchy vemos que es mayor el tráfico UDP, 98.94%, frente al 0.75% TCP. Si es consistente con una aplicacion que transmite en 
+   tiempo real, ya que como sabemos UDP es un protocolo que no realiza retransmisiones si se pierden paquetes, por lo que es ideal en una aplicacion de tiempo 
+   real, porque no sería demasiado bueno que nos llegase un paquete de hace 1 min.
  
  ** ¿Qué otros protocolos podemos ver en la jerarquía de protocolos?
-
+ 
+  Podemos ver IP (Internet Protocol Version 4), DNS (Domain Name Service), SIP (Session Initiation Protocol), Simple Traversal of UDP Through NAT, RTP (Real-Time
+  Transport Protocol), H.261, RTCP (Real-Time Transport Control Protocol), HTTP (Hipertext Transfer Protocol), ICMP (Internet Control Message Protocol) y ARP 
+  (Addres Resolution Protocol).
+   
 
 4. Observa por encima el flujo de tramas en el menú de Statistics en IO Graphs. La captura que estamos viendo incluye desde la inicialización (registro) de la aplicación hasta su finalización, con una llamada entremedias.
  ** Filtra por sip para conocer cuándo se envían paquetes SIP. ¿En qué segundos tienen lugar esos envíos?
