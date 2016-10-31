@@ -57,10 +57,23 @@ Se ha capturado una sesión SIP (archivo sip.cap.gz), que se puede abrir con Wir
 [Al terminar el ejercicio es recomendable hacer commit de los ficheros modificados]
 
 5. Analiza las primeras cuatro tramas de la captura nada más arrancar Ekiga.
+
  ** ¿Qué servicio es el utilizado en estas tramas?
+   
+   En las primeras tramas se utiliza DNS (Domain Name System). Se utiliza DNS para averiguar la direccion IP de Ekiga.
+ 
  ** ¿Cuál es la dirección IP del servidor de nombres del ordenador que ha lanzado Ekiga?
+ 
+   La dirección IP del servidor que ha lanzado EKiga es 80.58.61.250
+ 
  ** ¿Qué dirección IP (de ekiga.net) devuelve el servicio de nombres?
+   
+   La direccion que devuelve el servidor de nombres, es decir, la direccion IP de Ekiga es 86.64.162.35
+ 
  ** ¿Por qué se pide también para 35.162.64.86.in-addr.arpa?
+ 
+   Esto se debe a que DNS utiliza el método de resolución inversa. En nuestro caso nos devuelve 35.162.64.86.in-addr.arpa que significa que la direccion IP de 
+   Ekiga es la 86.64.162.35.
 
 
 6. A continuación, hay más de una docena de tramas TCP/HTTP.
