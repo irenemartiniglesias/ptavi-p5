@@ -100,10 +100,19 @@ Se ha capturado una sesión SIP (archivo sip.cap.gz), que se puede abrir con Wir
    para que pueda comunicarse en otras redes.
 
 7. Hasta la trama 45 se puede observar una secuencia de tramas del protocolo STUN.
+
  ** ¿Por qué crees que se hace uso de este protocolo en esta captura? Busca en la Wikipedia.
+   
+   El protocolo STUN es un protocolo de red que se usa en comunicaciones cliente/servidor y permite saber a clientes NAT su direccion ip pública, el tipo de NAT en
+   el que se encuentran y el puerto se Internet asociado con el puerto local a través del NAT. 
+   Esta información es usada para configurar una comunicación UDP entre dos hosts que se encuentren tras enrutadores NAT.
+   
+   En nuestro caso se usa STUN ya que queremos saber la dirección pública de la maquina origen, que se encuentra detrás de un NAT.
+   
  ** ¿Estamos tras un NAT?
 
-
+   Si, porque vemos que es necesario utilizar STUN. 
+   
 8. La trama 46 es la primera trama SIP. En un entorno como el de Internet, lo habitual es desconocer la dirección IP de la otra parte al realizar una llamada. Por eso, todo usuario registra su localización en un servidor Registrar. El Registrar guarda información sobre los usuarios en un servidor de localización que puede ser utilizado para localizar usuarios.
  ** ¿Qué dirección IP tiene el servidor Registrar?
  ** ¿A qué puerto (del servidor Registrar) se envían los paquetes SIP?
