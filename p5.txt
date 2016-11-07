@@ -64,7 +64,7 @@ Se ha capturado una sesión SIP (archivo sip.cap.gz), que se puede abrir con Wir
  
  ** ¿Cuál es la dirección IP del servidor de nombres del ordenador que ha lanzado Ekiga?
  
-   La dirección IP del servidor que ha lanzado EKiga es 80.58.61.250
+   La dirección IP del servidor que ha lanzado Ekiga es 80.58.61.250
  
  ** ¿Qué dirección IP (de ekiga.net) devuelve el servicio de nombres?
    
@@ -136,27 +136,101 @@ Se ha capturado una sesión SIP (archivo sip.cap.gz), que se puede abrir con Wir
 [Al terminar el ejercicio es recomendable hacer commit de los ficheros modificados]
 
 9. Fijémonos en las tramas siguientes a la número 46:
+
  ** ¿Se registra con éxito en el primer intento?
+    
+    No, lo podemos ver el el paquete 50, en el que el servidor le envia al cliente una trama 401 Unathorized. Este mensaje aparecce porque el cliente se tiene que 
+    identificar para que el servidor le registre.
+ 
  ** ¿Cómo sabemos si el registro se ha realizado correctamente o no?
- ** ¿Podrías identificar las diferencias entre el primer intento y el segundo de registro? (fíjate en el tamaño de los paquetes y mira a qué se debe el cambio)
+ 
+    Sabemos si el registro se ha realizado correctamente cuando el servidor envie una trama 200 OK.
+ 
+ ** ¿Podrías identificar las diferencias entre el primer intento y el segundo de registro? (fíjate en el tamaño de los paquetes y mira a qué se debe el cambio).
+ 
+    El tamaño del primer paquete es de 523 bytes y el de respuesta del servidor es de 714 bytes. Vemos que en el mensaje del servidor aparece un campo de
+    autorización (WWW-Authenticate: Digest
+    realm="ekiga.net", nonce="45a439ee7438aaea43ae8c7c2382922187f86c8b", qop="auth"), el campo nonce nos indica que el cliente al recibir la no autorización, para
+    poder registrarse necesita
+    resolver ese campo.
+    El tamaño del paquete del segundo intento es de 712 bytes, donde en el campo Authorization en el apartado Nonce Value:
+    "45a439ee7438aaea43ae8c7c2382922187f86c8b" vemos el mismo mensaje que
+    nos habia enviado el servidor para resolver si queremos registrarnos y en el apartado Algorithm: md5 y response="5267d4e49d707d4443baefa913e8ff90" vemos que el
+    algorimo que usa para
+    descifrarlo es el md5 y response es la solución a nonce value.
+    
  ** ¿Cuánto es el valor del tiempo de expiración de la sesión? Indica las unidades.
 
+    El tiempo de expiración de la sesión la podemos ver en el segundo paquete de REGISTER en el apartado Expires al final del paquete. El tiempo es de 3600
+    segundos.
 
-10. Una vez registrados, podemos efectuar una llamada. Vamos a probar con el servicio de eco de Ekiga que nos permite comprobar si nos hemos conectado correctamente. El servicio de eco tiene la dirección sip:500@ekiga.net. Veamos el INVITE de cerca.
+
+10. Una vez registrados, podemos efectuar una llamada. Vamos a probar con el servicio de eco de Ekiga que nos permite comprobar si nos hemos conectado
+correctamente. El servicio de eco tiene la dirección sip:500@ekiga.net. Veamos el INVITE de cerca.
+
  ** ¿Puede verse el nombre del que efectúa la llamada, así como su dirección SIP?
+ 
+    En el paquete INVITE podemos ver en el apartado de SIP en el campo Message Header y posteriormente en el campo From vemos que la llamada la ha realizado
+    Gregorio Robles cuya direccion SIP es grex@ekiga.net.
+ 
  ** ¿Qué es lo que contiene el cuerpo de la trama? ¿En qué formato/protocolo está?
+ 
+    Lo que contiene el cuerpo de la trama se encuentra en el apartado SIP y en message body. En dicho apartado se describe la información de la sesión como en la
+    versión en la que se encuentra,
+    el nombre de la sesión. La sesión está descrita en SDP.
+ 
  ** ¿Tiene éxito el primer intento? ¿Cómo lo sabes?
+ 
+    No, porque en la trama 85 el servidor envía un 407 Proxy Authentication Requiered. Esto significa que el servidor proxy debe autenticarse.
+ 
  ** ¿En qué se diferencia el segundo INVITE más abajo del primero? ¿A qué crees que se debe esto?
 
-
+    El primer INVITE tiene un tamaño de 982 bytes mientras que el segundo tiene 1181 bytes. En el segundo podemos ver en el apartado de SIP hay un campo de (Proxy
+    Authorization: Digest
+    username="grex", realm="ekiga.net", nonce="45a439f6ba5f681cd945fb7c40529fd1e0f28a81", uri="sip:500@ekiga.net", algorithm=md5,
+    response="9a5627c14a8a433bd308d2ec54777240"). Este cambio se debe a que es necesaria la autenticación del Proxy para poder establecer con éxito la conexión.    
+    
 11. Una vez conectado, estudia el intercambio de tramas.
+
  ** ¿Qué protocolo(s) se utiliza(n)? ¿Para qué sirven estos protocolos?
+ 
+    H.261, RTP, RTCP y ARP. 
+    El protocolo RTP (Real-time Transport Protocol) es un protocolo de nivel de sesión utilizado para la transmisión de información en tiempo real, como por
+    ejemplo audio y vídeo en una 
+    video-conferencia.
+    
+    H.261 funciona sobre RTP y permite la compresión de audio, video, videoconferencias.
+
+    El protocolo RTCP (Rel-time Transport Control Protocol) es utilizado para enviar datos de control entre el emisor y receptor de una secuencia RTP. Los paquetes
+    RTCP son enviados 
+    aproximadamente cada cinco segundos, y contienen datos que ayudan a verificar las condiciones de transmisión en el extremo remoto. 
+    
+    El protocolo ARP (Address Resolution Protocol) es un protocolo de comunicaciones de la capa de enlace de datos, responsable de encontrar la dirección de
+    hardware (Ethernet MAC) que corresponde a una determinada dirección IP. Para ello se envía un paquete (ARP request) a la dirección de difusión de la red
+    (broadcast, MAC = FF FF FF FF FF FF) que contiene la dirección IP por la que se pregunta, y se espera a que esa máquina (u otra) responda (ARP reply) con la
+    dirección Ethernet que le corresponde. Cada máquina mantiene una caché con las direcciones traducidas para reducir el retardo y la carga. ARP permite a la
+    dirección de Internet ser independiente de la dirección Ethernet, pero esto solo funciona si todas las máquinas lo soportan
+ 
  ** ¿Cuál es el tamaño de paquete de los mismos?
+ 
+    Paquetes H.261 : tamaño variable.
+    Paquetes ARP: tamaño de 42 y 60 bytes. 
+    Paquetes RTP: tamaño 241 bytes.
+    Paquetes RTCP: tamaño 102 bytes.
+ 
  ** ¿Se utilizan bits de padding?
+ 
+    En ninguno de los protocolos se utilizan bits de relleno. En en apartado Padding aparece False.
+ 
  ** ¿Cuál es la periodicidad de los paquetes que se envían?
+ 
+    La periodicidad de los paquetes que se envían la podemos comprobar en el campo timestamp.
+    Para poder calcular esta peridiocidad tenemos que mirar un paquete G.711, donde podemos ver que se transmite a 64kb/s, además conocemos el timestamp (160), es
+    decir, que seremos capaces de enviar 50 paquetes (64000/(8*160)) de 1280 bits (64000/50) por segundo. Es decir, el periodo será 1/50, que es 0.02 segundos.
+ 
  ** ¿Cuántos bits/segundo estamos enviando?
-
-
+ 
+    Esyamos enviando 64 Kb/s, es decir, 64000bits/s.   
 
 [Al terminar el ejercicio es recomendable hacer commit de los ficheros modificados]
 
@@ -205,14 +279,39 @@ Captura una sesión SIP de una conversación con el número SIP sip:9999@qxip.ne
 
 17. Observa las diferencias en el inicio de la conversación entre el entorno del laboratorio y el del ejercicio anterior:
  ** ¿Es necesario el uso de DNS y STUN? ¿Por qué?
+ 
+    No es necesario porque DNS lo que hace es pedir el nombre del dominio, en nuestro caso ya sabemos el nombre: sip:music@iptel.org. STUN se utiliza para averiguar la ip pubblica cuando estamos
+    dentras de un NAT. En nuestro caso sabemos nuestra dirección ip pública.
+    
  ** ¿Son diferentes el registro y la descripción de la sesión?
 
+    Si, porque el campo allow de nuestra captura es siguiente. Allow: INVITE,ACK,OPTIONS,BYE,CANCEL,SUBSCRIBE,NOTIFY,REFER,MESSAGE,INFO,PING,PRACK
 
 18. Identifica las diferencias existentes entre esta conversación y la conversación anterior:
+
  ** ¿Cuántos flujos tenemos?
+ 
+    Tenemos 4 flujos, codificados en g.711. Dos de ellos van desde el cliente (yo) a music@iptel.org y otras dos en sentido contrario.
+ 
  ** ¿Cuál es su periodicidad?
+ 
+    La periodicidad es la misma ya que el codificador es el mismo, G.711. La perioricidad es de 0.02.
+ 
  ** ¿Cuánto es el valor máximo del delta y los valores medios y máximo del jitter?
+    De ida.
+        El máximo valor del delta es: 30.63ms
+        El valor medio del jitter es: 3.46ms
+        El máximo jitter es: 4.61ms
+   
+    De vuelta. 
+        El máximo valor del delta es: 42.98ms
+        El valor medio del jitter es: 0.96ms
+        El máximo jitter es: 3.04ms
+    
  ** ¿Podrías reproducir la conversación desde Wireshark? ¿Cómo? Comprueba que poniendo un valor demasiado pequeño para el buffer de jitter, la conversación puede no tener la calidad necesaria.
+ 
+    
+ 
  ** ¿Sabrías decir qué tipo de servicio ofrece sip:9999@qxip.net?
 
 
