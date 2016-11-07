@@ -235,38 +235,104 @@ correctamente. El servicio de eco tiene la dirección sip:500@ekiga.net. Veamos 
 [Al terminar el ejercicio es recomendable hacer commit de los ficheros modificados]
 
 12. Vamos a ver más a fondo el intercambio RTP. En Telephony hay una opción RTP. Empecemos mirando los flujos RTP.
+
  ** ¿Cuántos flujos hay? ¿por qué?
+    
+    Para saber cuántos flujos hay vamos a Telephony-> Show all Streams y ahí vemos que hay dos flujos. Uno que va desde el cliente al servidor con puerto 5014 y
+    otro con puerto 5010. Hay dos flujos porque en uno se utiliza G.711 y en otro H.261.
+    
  ** ¿Cuántos paquetes se pierden?
+ 
+    Con la misma cocnfiguración del apartado anterior vemos que no se han perido ningun paquete.
+    
  ** ¿Cuál es el valor máximo del delta? ¿Y qué es lo que significa el valor de delta?
+ 
+    El valor máximo del delta es 1290.479000 ms para el flujo de codificacion h261 (video) y de 1290.444000 ms para el flujo de codificación G.711 (audio).
+    El valor de delta indica el valor de tiempo máximo existente entre un paquete y el anterior en el envío de paquetes RTP.
+
  ** ¿Cuáles son los valores de jitter (medio y máximo)? ¿Qué quiere decir eso? ¿Estamos ante una conversación de calidad?
 
-
+    Para el paquete de video (h261): Max jitter: 119.635 ms, Mean jitter: 42.5002 ms.
+    Para el paquete de audio (G.771): Maw jitter: 183.095 ms, Mean jitter: 153.240 ms.
+    Los paquetes del transmisor pueden llegar a su destino con diferentes retardos. Un retardo de un paquete varía impredeciblemente con su posición en las colas
+    de los ruteadores a lo largo del camino entre el transmisor y el destino. Esta variación en retardo se conoce como jitter y puede afectar seriamente la calidad
+    del flujo de audio y/o vídeo.
+    El jitter entre el punto inicial y final de la comunicación debiera ser ser inferior a 100 ms. En nuestro caso el jitter medio en audio es de 42,500200ms, es
+    decir, que podemos considerar que es una conversación de calidad.
+    
 13. Elige un paquete RTP de audio. Analiza el flujo de audio en Telephony -> RTP -> Stream Analysis.
+
  ** ¿Cuánto valen el delta y el jitter para el primer paquete que ha llegado?
+ 
+    Delta: 0 ms y jitter: 0 ms.
+ 
  ** ¿Podemos saber si éste es el primer paquete que nos han enviado?
+ 
+    Si que lo podemos saber mediente el número de secuencia y por el Marker.
+ 
  ** Los valores de jitter son menores de 10ms hasta un paquete dado. ¿Cuál?
+
+    Son menores hasta el paquete 247.
+    
  ** ¿A qué se debe el cambio tan brusco del jitter?
+
+    Este cambio se debe al cambio del delta, que ahora es de 554.74 ms.
+ 
  ** ¿Es comparable este cambio con el tiempo desde la recepción del paquete anterior? ¿Por qué?
+
+    Podemos ver que si que es comparable, ya que como hemos visto anteriormente el jitter varía en función del valor de la delta, que nos da la diferencia de
+    tiempo entre el envío de un paquete y el anterior. En este caso al tener un aumento considerable de la delta el paquete llegará mucho más tarde comparado con
+    los paquetes enviados con anterioridad.
+ 
  ** ¿Cuál es la dependencia entre el tiempo transcurrido desde el paquete anterior y el valor de jitter?
+
+    La dependencia entre el tiempo transcurrido desde el paquete anterior y el valor del jitter es la variabilidad del retardo. Esto se debe a que sabemos que la
+    fórmula que se usa para calcular el jitter es J(i) = J(i-1) + (|D(i-1, i)| - J(i-1))/16 , donde D(i-1, i) es la diferencia de tiempo de llegada entre un
+    paquete y el paquete anterior, entonces la diferencia es la siguiente: |D(i-1,i)| = J(i) + J(i-1))/16 - J(i-1). El jitter del paquete anterior es J(i-1).
 
 
 14. En Telephony selecciona el menú VoIP calls. Verás que se lista la llamada de voz IP capturada en una ventana emergente. Selecciona esa llamada y pulsa el botón Graph.
+
  ** ¿Cuánto dura la conversación?
+
+    Vemos que la conversación empieza en el 14.426793 y terminca en el 39.229683 por lo que la llamada dura 24.80289 segundos.
+
  ** ¿Cuáles son sus SSRC? ¿Por qué hay varios SSRCs? ¿Hay CSRCs?
 
+    Vemos que tenemos dos SSRC: uno de audio y otro de video. 
+    El de audio es: Synchronization Source identifier: 0xbf4afd37 (3209362743)
+    El de video es: Synchronization Source identifier: 0x43306582 (1127245186)
+    Para saber si hay CSRCs vamos dentro del apartado RTP y vemos si el campo Contributing source identifiers count está a cero o a uno. En nuestro caso en ambos
+    flujos está a cero, lo que signica que los SSRCs no pasan por mezcladores.
 
 15. Identifica la trama donde se finaliza la conversación.
+
  ** ¿Qué método SIP se utiliza?
+
+   Utiliza BYE. 
+
  ** ¿En qué trama(s)?
+    
+    Trama 924.
+    
  ** ¿Por qué crees que se envía varias veces?
 
+    Vemos que se envía varias veces porque el servisor no ha enviaddo un 200 OK. Esto se debe a que RTP se usa sobre UDP (protocolo no fiable) y envia tantos
+    mensajes como sea necesario para asegurarse de que llega a su destino.
 
 16. Finalmente, se cierra la aplicación de VozIP.
+
  ** ¿Por qué aparece una instrucción SIP del tipo REGISTER?
+
+    Se envia un nuevo REGISTER pero con campo Expires 0 para darse de baja definitivamente.
+
  ** ¿En qué trama sucede esto?
+
+    En la 950-    
+
  ** ¿En qué se diferencia con la instrucción que se utilizó con anterioridad (al principio de la sesión)?
 
-
+    Se diferencia en que se usa para dar de baja a un cliente que ya se habia registrado con anterioridad.
 
 [Al terminar el ejercicio es recomendable hacer commit de los ficheros modificados]
 
@@ -280,8 +346,8 @@ Captura una sesión SIP de una conversación con el número SIP sip:9999@qxip.ne
 17. Observa las diferencias en el inicio de la conversación entre el entorno del laboratorio y el del ejercicio anterior:
  ** ¿Es necesario el uso de DNS y STUN? ¿Por qué?
  
-    No es necesario porque DNS lo que hace es pedir el nombre del dominio, en nuestro caso ya sabemos el nombre: sip:music@iptel.org. STUN se utiliza para averiguar la ip pubblica cuando estamos
-    dentras de un NAT. En nuestro caso sabemos nuestra dirección ip pública.
+    No es necesario porque DNS lo que hace es pedir el nombre del dominio, en nuestro caso ya sabemos el nombre: sip:music@iptel.org. STUN se utiliza para
+    averiguar la ip pubblica cuando estamos dentras de un NAT. En nuestro caso sabemos nuestra dirección ip pública.
     
  ** ¿Son diferentes el registro y la descripción de la sesión?
 
@@ -309,11 +375,15 @@ Captura una sesión SIP de una conversación con el número SIP sip:9999@qxip.ne
         El máximo jitter es: 3.04ms
     
  ** ¿Podrías reproducir la conversación desde Wireshark? ¿Cómo? Comprueba que poniendo un valor demasiado pequeño para el buffer de jitter, la conversación puede no tener la calidad necesaria.
- 
-    
+
+    Para poder reproducir la conversación desde Wireshark, debemos ir a Telephony y elegir la opción VoIP Calls, después primero damos a Play y luego Decode, y de
+    esta forma se reproduce.
+    Al reproducir con un buffer de jitter muy pequeño la conversación se escucha entrecortada, se pierden palabras, lo he comprobado con un buffer de 5ms y no es
+    muy buena la calidad.    
  
  ** ¿Sabrías decir qué tipo de servicio ofrece sip:9999@qxip.net?
 
+    Ofrece un servicio de audio.
 
 
 [Al terminar el ejercicio es recomendable hacer commit de los ficheros modificados]
